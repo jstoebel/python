@@ -25,6 +25,7 @@ class Tree(Generic[TreeType]):
     def __repr__(self):
         return f"<Tree '{self.label}'>"
 
+
     def from_pov(self, from_node: str):
         """
         :param from_node: label of node to re-root
@@ -56,3 +57,13 @@ class Tree(Generic[TreeType]):
             return node.find(target_node_label)
 
         raise NodeNotFound
+
+def traverse(root):
+    return traverse_util(root)
+
+
+def traverse_util(root):
+    my_data = [root.label]
+    for child in root.children:
+        my_data += traverse_util(child)
+    return my_data
