@@ -19,8 +19,8 @@ def test_find():
 
     with pytest.raises(NodeNotFound):
         tree.find("d")
-
-class TestPov:
+    
+class TestFromPov:
 
     def traverse(self, root):
         return self.traverse_util(root)
@@ -32,7 +32,7 @@ class TestPov:
         return my_data
 
     def assert_tree_equals(self, tree_a, tree_b):
-        assert self.traverse(tree_a) == self.traverse(tree_b)
+        assert traverse(tree_a) == traverse(tree_b)
 
     def test_results_in_the_same_tree_if_the_input_tree_is_a_singleton(self):
         tree = Tree("x")
@@ -117,6 +117,9 @@ class TestPov:
         with self.assertRaisesWithMessage(ValueError):
             tree.from_pov("nonexistent")
 
+
+class TestPathTo:
+
     def test_can_find_path_to_parent(self):
         tree = Tree("parent", [Tree("x"), Tree("sibling")])
         expected = ["x", "parent"]
@@ -181,10 +184,6 @@ class TestPov:
         )
         with self.assertRaisesWithMessage(ValueError):
             tree.path_to("nonexistent", "x")
-
-    # Custom Utility Functions
-    def assert_tree_equals(self, result, expected):
-        self.assertEqual(result, expected, "{} != {}".format(result, expected))
 
     # Utility functions
     def assertRaisesWithMessage(self, exception):
