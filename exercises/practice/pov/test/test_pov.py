@@ -16,9 +16,7 @@ def test_find():
 
     check.equal(tree.find("b"), child)
     check.equal(tree.find("c"), grandchild)
-
-    with pytest.raises(NodeNotFound):
-        tree.find("d")
+    check.is_none(tree.find("d"))
     
 class TestFromPov:
 
@@ -83,8 +81,8 @@ class TestFromPov:
         expected = Tree(
             "x",
             [
-                Tree("kid-1"),
                 Tree("kid-0"),
+                Tree("kid-1"),
                 Tree(
                     "parent",
                     [
@@ -102,7 +100,7 @@ class TestFromPov:
 
     def test_errors_if_target_does_not_exist_in_a_singleton_tree(self):
         tree = Tree("x")
-        with self.assertRaisesWithMessage(ValueError):
+        with pytest.raises(ValueError):
             tree.from_pov("nonexistent")
 
     def test_errors_if_target_does_not_exist_in_a_large_tree(self):
@@ -114,7 +112,7 @@ class TestFromPov:
                 Tree("sibling-1"),
             ],
         )
-        with self.assertRaisesWithMessage(ValueError):
+        with pytest.raises(ValueError):
             tree.from_pov("nonexistent")
 
 
@@ -123,12 +121,12 @@ class TestPathTo:
     def test_can_find_path_to_parent(self):
         tree = Tree("parent", [Tree("x"), Tree("sibling")])
         expected = ["x", "parent"]
-        self.assertEqual(tree.path_to("x", "parent"), expected)
+        assert tree.path_to("x", "parent") == expected
 
     def test_can_find_path_to_sibling(self):
         tree = Tree("parent", [Tree("a"), Tree("x"), Tree("b"), Tree("c")])
         expected = ["x", "parent", "b"]
-        self.assertEqual(tree.path_to("x", "b"), expected)
+        assert tree.path_to("x", "b") == expected
 
     def test_can_find_path_to_cousin(self):
         tree = Tree(
@@ -146,7 +144,7 @@ class TestPathTo:
             ],
         )
         expected = ["x", "parent", "grandparent", "uncle", "cousin-1"]
-        self.assertEqual(tree.path_to("x", "cousin-1"), expected)
+        assert tree.path_to("x", "cousin-1") == expected
 
     def test_can_find_path_not_involving_root(self):
         tree = Tree(
@@ -154,12 +152,12 @@ class TestPathTo:
             [Tree("parent", [Tree("x"), Tree("sibling-0"), Tree("sibling-1")])],
         )
         expected = ["x", "parent", "sibling-1"]
-        self.assertEqual(tree.path_to("x", "sibling-1"), expected)
+        assert tree.path_to("x", "sibling-1") == expected
 
     def test_can_find_path_from_nodes_other_than_x(self):
         tree = Tree("parent", [Tree("a"), Tree("x"), Tree("b"), Tree("c")])
         expected = ["a", "parent", "c"]
-        self.assertEqual(tree.path_to("a", "c"), expected)
+        assert tree.path_to("a", "c") == expected
 
     def test_errors_if_destination_does_not_exist(self):
         tree = Tree(
@@ -170,7 +168,7 @@ class TestPathTo:
                 Tree("sibling-1"),
             ],
         )
-        with self.assertRaisesWithMessage(ValueError):
+        with pytest.raises(ValueError):
             tree.path_to("x", "nonexistent")
 
     def test_errors_if_source_does_not_exist(self):
@@ -182,13 +180,8 @@ class TestPathTo:
                 Tree("sibling-1"),
             ],
         )
-        with self.assertRaisesWithMessage(ValueError):
+        with pytest.raises(ValueError):
             tree.path_to("nonexistent", "x")
-
-    # Utility functions
-    def assertRaisesWithMessage(self, exception):
-        return self.assertRaisesRegex(exception, r".+")
-
 
 if __name__ == "__main__":
     unittest.main()
