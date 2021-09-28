@@ -68,6 +68,9 @@ class Tree(Generic[TreeType]):
             return self
 
         starting_node = self.find(from_node)
+        if starting_node is None:
+            raise ValueError
+
         return reroot(starting_node, Tree(starting_node.label))
         # staring node takes parent and siblings and makes them children
 
@@ -78,13 +81,14 @@ class Tree(Generic[TreeType]):
         """
         :param from_node: label of node to start from
         :param to_node: label of node to go to
-        :returns: ???
+        :returns: array of node labels describing the path between the two nodes
         """
 
         starting_node = self.find(from_node)
 
         if starting_node is None:
             raise ValueError
+
         path = get_path_to(starting_node, to_node, [])
         if path:
             return path
