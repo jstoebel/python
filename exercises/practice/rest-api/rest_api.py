@@ -3,10 +3,10 @@ from functools import reduce
 import json
 
 class User:
-    def __init__(self, name) -> None:
-        self.name = name
-        self.owes = defaultdict(float) 
-        self.owed_by = defaultdict(float)
+    def __init__(self, data) -> None:
+        self.name = data["name"]
+        self.owes = defaultdict(float, data.get("owes", {}))
+        self.owed_by = defaultdict(float, data.get("owed_by", {}))
 
     @property
     def balance(self):
@@ -33,11 +33,12 @@ class User:
             "balance": self.balance,
         }
 
-    def add_debt(self, lender_name, amount):
-        self.owes[lender_name] += amount
+    def add_debt(self, lender, amount):
+        self.owes[lender.name] += amount
 
-    def add_credit(self, borrower_name, amount):
-        self.owed_by[borrower_name] += amount
+    def add_credit(self, borrower, amount):
+        self.owed_by[borrower.name] += amount
+
 
 class Database:
     """
@@ -45,7 +46,7 @@ class Database:
     """
     def __init__(self, data) -> None:
         self.users = [
-            User(data["name"])
+            User(data)
             for data in data["users"]
         ]
 
@@ -61,7 +62,7 @@ class Database:
         )
 
     def create_user(self, user_name):
-        user = User(user_name)
+        user = User({"name": user_name})
         self.users.append(user)
         return user
 
@@ -69,13 +70,18 @@ class Database:
         """
         example: {"lender": "Adam", "borrower": "Bob", "amount": 3.0}
         """
+
+        """
+        TODO: the net balance between users should be shown. 
+        Instead of {'name': 'Adam', 'owes': {'Bob': 3.0}, 'owed_by': {'Bob': 2.0}, 'balance': -1.0}
+        show {'name': 'Adam', 'owes': {'Bob': 1.0}, 'owed_by': {}, 'balance': -1.0}
+        """
         amount = iou["amount"]
         lender = next(
             user
             for user in self.users
             if user.name == iou["lender"]
         )
-        
 
         borrower = next(
             user
@@ -83,8 +89,8 @@ class Database:
             if user.name == iou["borrower"]
         )
 
-        lender.add_credit(borrower_name=borrower.name, amount=amount)
-        borrower.add_debt(lender_name=lender.name, amount=amount)
+        lender.add_credit(borrower=borrower, amount=amount)
+        borrower.add_debt(lender=lender, amount=amount)
         return self.get_users([lender.name, borrower.name])
 
 
