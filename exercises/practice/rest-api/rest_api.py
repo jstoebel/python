@@ -40,16 +40,24 @@ class User:
     def set_new_balance_with(self, other_user, amount):
         if amount > 0:
             self.update_owed_by(other_user, amount)
+            self.clear_owes(other_user)
         elif amount < 0:
             self.update_owes(other_user, amount)
+            self.clear_owed_by(other_user)
         else:
             self.clear_debt_with(other_user)
+
+    def update_owed_by(self, other_user, amount):
+        self.owed_by[other_user.name] = amount
+
+    def clear_owed_by(self, other_user):
+        pass
 
     def update_owes(self, other_user, amount):
         self.owes[other_user.name] = amount
 
-    def update_owed_by(self, other_user, amount):
-        self.owed_by[other_user.name] = amount
+    def clear_owes(self, other_user):
+        pass
 
     def create_debt(self, lender, amount):
         """
