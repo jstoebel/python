@@ -25,43 +25,54 @@ class User:
             "balance": self.balance,
         }
 
-class RestAPI:
-    def __init__(self, database=None):
+class Database:
+    """
+    should use objects internally, but return dicts
+    """
+    def __init__(self, data) -> None:
         users = [
             User(data["name"])
-            for data in database["users"]
+            for data in data["users"]
         ]
-        self.database = {"users": users}
+        self.data = {"users": users}
 
-    def get(self, url, payload=None):
-        if url == "/users":
-            return json.dumps(self.get_users(payload))
-
-    def get_users(self, payload=None):
+    def get_users(self, names=None):
 
         names_to_include = (
-            json.loads(payload)["users"] 
-            if payload
-            else self.database["users"]
+            json.loads(names)["users"] 
+            if names
+            else self.data["users"]
         )
 
         users = [
             user.data
             for user
-            in self.database["users"]
+            in self.data["users"]
             if user.name in names_to_include
         ]
         return {"users": users}
 
+    def create_user(self, user_name):
+        user = User(user_name)
+        self.data["users"].append(user)
+        return user
+
+class RestAPI:
+    def __init__(self, database=None):
+        self.database = Database(database)
+
+    def get(self, url, payload=None):
+        if url == "/users":
+            return json.dumps(
+                self.database.get_users(payload)
+            )
+
     def post(self, url, payload=None):
         if url == "/add":
             user_name = json.loads(payload)["user"]
-            user = User(user_name)
-            self.create_user(user)
+            user = self.database.create_user(user_name)
             return json.dumps(user.data)
-
-    def create_user(self, user):
-        self.database["users"].append(user)
+        # if url == "/iou"
 
     def create_iou(self, iou):
         pass
