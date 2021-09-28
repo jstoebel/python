@@ -28,7 +28,7 @@ class User:
 class RestAPI:
     def __init__(self, database=None):
         users = [
-            User(data)
+            User(data["name"])
             for data in database["users"]
         ]
         self.database = {"users": users}
@@ -46,10 +46,10 @@ class RestAPI:
         )
 
         users = [
-            user
+            user.data
             for user
             in self.database["users"]
-            if user["name"] in names_to_include
+            if user.name in names_to_include
         ]
         return {"users": users}
 
