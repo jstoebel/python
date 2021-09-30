@@ -9,7 +9,7 @@ class User:
         self.owed_by = defaultdict(float, data.get("owed_by", {}))
 
     def __repr__(self) -> str:
-        return f"<User name={self.name}, owes={self.owes}, owed_by={self.owed_by}>"
+        return f"<User name={self.name}, owes={self.owes}, owed_by={self.owed_by} balance={self.get_balance()}>"
 
     def get_balance(self, other_user=None):
         """
@@ -19,14 +19,14 @@ class User:
             amount
             for name, amount
             in self.owed_by.items()
-            if (other_user and other_user.name == name) or True
+            if (other_user is None or other_user.name == name)
         ]
 
         debts = [
             amount
             for name, amount
             in self.owes.items()
-            if (other_user and other_user.name == name) or True
+            if (other_user is None or other_user.name == name)
         ]
 
         return sum(credits) - sum(debts)
