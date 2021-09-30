@@ -160,8 +160,5 @@ class RestApiTest(unittest.TestCase):
         }
         self.assertDictEqual(json.loads(response), expected)
 
-    def test_iou_clears_debt(self):
-        assert False
-
 if __name__ == "__main__":
     unittest.main()
