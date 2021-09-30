@@ -8,8 +8,10 @@ class User:
         self.owes = defaultdict(float, data.get("owes", {}))
         self.owed_by = defaultdict(float, data.get("owed_by", {}))
 
-    @property
-    def balance(self, other_user=None):
+    def __repr__(self) -> str:
+        return f"<User name={self.name}, owes={self.owes}, owed_by={self.owed_by}>"
+
+    def get_balance(self, other_user=None):
         """
         compute balance for user, optionally filtering by relationship with a single other user
         """
@@ -35,51 +37,52 @@ class User:
             "name": self.name,
             "owes": self.owes,
             "owed_by": self.owed_by,
-            "balance": self.balance,
+            "balance": self.get_balance(),
         }
     def set_new_balance_with(self, other_user, amount):
         if amount > 0:
+            # the other user owes this user money
             self.update_owed_by(other_user, amount)
             self.clear_owes(other_user)
         elif amount < 0:
+            # this user owes money to the other user
             self.update_owes(other_user, amount)
             self.clear_owed_by(other_user)
         else:
-            self.clear_debt_with(other_user)
+            # the two users are even.
+            self.clear_owed_by(other_user)
+            self.clear_owes(other_user)
 
     def update_owed_by(self, other_user, amount):
-        self.owed_by[other_user.name] = amount
+        self.owed_by[other_user.name] = abs(amount)
 
     def clear_owed_by(self, other_user):
-        pass
+        """
+        clear record of other_user owing user if exists
+        """
+        self.owed_by.pop(other_user.name, None)
 
     def update_owes(self, other_user, amount):
-        self.owes[other_user.name] = amount
+        self.owes[other_user.name] = abs(amount)
 
     def clear_owes(self, other_user):
-        pass
+        """
+        clear record of user owing other_user if exists
+        """
+        self.owes.pop(other_user.name, None)
 
     def create_debt(self, lender, amount):
         """
         compute the new balance for both users and update
         """
-        my_balance = self.balance(other_user=lender)
+        my_balance = self.get_balance(other_user=lender)
         my_new_balance = my_balance - amount
 
-        other_balance = lender.balance(other_user=self)
+        other_balance = lender.get_balance(other_user=self)
         other_new_balance = other_balance + amount
 
         self.set_new_balance_with(other_user=lender, amount=my_new_balance)
         lender.set_new_balance_with(other_user=self, amount=other_new_balance)
-
-    def create_credit(self, lender, amount):
-        pass
-
-    def add_debt(self, lender, amount):
-        self.owes[lender.name] += amount
-
-    def add_credit(self, borrower, amount):
-        self.owed_by[borrower.name] += amount
 
 
 class Database:
@@ -131,8 +134,7 @@ class Database:
             if user.name == iou["borrower"]
         )
 
-        lender.add_credit(borrower=borrower, amount=amount)
-        borrower.add_debt(lender=lender, amount=amount)
+        borrower.create_debt(lender=lender, amount=amount)
         return self.get_users([lender.name, borrower.name])
 
 
